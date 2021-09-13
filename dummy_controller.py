@@ -1,8 +1,8 @@
 import numpy
 
 class Controller(object):
-    
-        def control(self, params, cont = None):
+
+    def control(self, params, cont = None):
 
         action1 = numpy.random.choice([1,0])
         action2 = numpy.random.choice([1,0])
