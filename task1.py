@@ -6,6 +6,7 @@
 ###############################################################################
 
 # imports framework
+from optimization_specialist_demo import tournament
 import sys
 sys.path.insert(0, 'evoman')
 from environment import Environment
@@ -77,28 +78,41 @@ def crossover(x):
     "return kind"
 
 def mutation(x): 
-    "arg: popolation, kind"
+    "arg: popolation, kids"
     a = 1
     "return kind na mutation"
 
-def add_offspring(x): 
-    "arg: population, kind, fitness pop, fitness kind"
-    a = 1
+def add_offspring(pop, offspring, fit_pop, fit_offspring): 
+    "arg: population, kids, fitness pop, fitness kind"
+    pop = np.vstack((pop, offspring))
+    fit_pop = np.append(fit_pop, fit_offspring)
+    return pop, fit_pop
     "return nieuwe population, nieuwe fitness population"
 
-def find_best(x): 
+def find_best(pop, fit_pop): 
     "arg: fitness population, population"
-    a = 1
+    best = np.argmax(fit_pop)
+    fit_pop[best] = float(evaluate(np.array([pop[best] ]))[0]) # repeats best eval, for stability issues
+    best_fit = fit_pop[best]
+    return best_fit
     "return best"
 
-def update_pop(x): 
+def select_pop(pop, fit_pop, best): 
+    "select simpel and select door tournament"
     "arg: fitness population, population, best"
-    a = 1
+    rank_fit = np.argsort(fit_pop)
+    
+    return pop, fit_pop
     "return population - worst, fitness population - worst"
 
-def check_improved(x): 
-    "arg: best, last solution"
-    a = 1
+def check_improved(best, last, not_improved): 
+    "arg: best, last solution, not_improved"
+    if best > last:
+        last = best
+        not_improved = 0
+    else:
+        not_improved += 1
+    return last, not_improved
     "return not_improved, last solution"
 #############
 
@@ -179,7 +193,7 @@ for i in range(ini_g+1, gens):
     # repeats best eval, for stability issues (kijk demo)
     # sla beste solution op 
 
-    # remove slechtste uit populatie ->
+    # remove slechtste uit populatie (nieuwe selectie voor populatie) ->
         # check slides hoe (eerst slechste)
     
     # check of je improved op voorgaande solution
