@@ -62,7 +62,7 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 dom_u = 1
 dom_l = -1
 npop = 100
-gens = 30
+gens = 3
 mutation = 0.2
 last_best = 0
 
@@ -97,13 +97,29 @@ def find_best(pop, fit_pop):
     return best_fit
     "return best"
 
-def select_pop(pop, fit_pop, best): 
+def calc_psel(m, rank, s = 1.5):
+    psel = ( (2-s) / m ) + ( ( 2*i*(s-1) ) / ( m * (m-1)))
+    return psel
+
+def select_pop(pop, fit_pop): 
     "select simpel and select door tournament"
+    m = len(pop)
+    probs = np.zeros(m)
+    ranked_fit = np.argsort(fit_pop)
+    for rank, i in enumerate(ranked_fit):
+        psel = calc_psel(m, rank)
+        probs[i] = psel
     "arg: fitness population, population, best"
-    rank_fit = np.argsort(fit_pop)
-    
-    return pop, fit_pop
+
+    return probs
     "return population - worst, fitness population - worst"
+
+def choose_pop(pop, fit_pop, probs):
+    chosen = np.random.choice(pop.shape[0], npop , p=probs, replace=False)
+    chosen = np.append(chosen[1:],best)
+    pop = pop[chosen]
+    fit_pop = fit_pop[chosen]
+    return pop, fit_pop
 
 def check_improved(best, last, not_improved): 
     "arg: best, last solution, not_improved"
@@ -183,24 +199,37 @@ for i in range(ini_g+1, gens):
     #run alle methods voor gens - ini_g+1 iterations
 
     # crossover 
+    offspring = crossover(pop)
+
     # mutation  -> produced kind
+    offspring = mutation(offspring)
+
     # simulate kind om fitness te krijgen
+    fit_offspring = evaluate(offspring)
 
     # voeg kind toe aan population
     # voeg fitness van kind toe aan population
+    pop, fit_pop = add_offspring(pop, offspring, fit_pop, fit_offspring)
 
     # zoek beste uit population (hoogste fitness)
     # repeats best eval, for stability issues (kijk demo)
     # sla beste solution op 
+    best_fit = find_best(pop, fit_pop)
 
     # remove slechtste uit populatie (nieuwe selectie voor populatie) ->
         # check slides hoe (eerst slechste)
-    
+    probs = select_pop(pop, fit_pop)
+    pop, fit_pop = choose_pop(pop, fit_pop, probs)
+
+
     # check of je improved op voorgaande solution
         # ja: update best solution 
         # nee: add 1 aan notimproved
     # stel last solution is x aantal keer niet improved -> kill simulations
-
+    last, not_improved = check_improved(best, last, not_improved)
+    if not_improved == 10:
+        not_improved = 0 
+        "is ff om error te voorkomen"
 
     best = np.argmax(fit_pop)
     std  =  np.std(fit_pop)
