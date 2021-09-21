@@ -26,7 +26,7 @@ if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 
-experiment_name = 'individual_demo'
+experiment_name = 'task1'
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -62,7 +62,7 @@ nvar = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 100
+npop = 20
 gens = 3
 mutation = 0.2
 last_best = 0
@@ -214,6 +214,7 @@ last_sol = fit_pop[best]
 notimproved = 0
 
 for i in range(ini_g+1, gens):
+    print(i)
     error = 'weg'
     #run alle methods voor gens - ini_g+1 iterations
 
