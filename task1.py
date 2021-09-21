@@ -37,7 +37,8 @@ env = Environment(experiment_name=experiment_name,
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
                   level=2,
-                  speed="fastest")
+                  speed="fastest",
+                  randomini = "yes")
 
 # default environment fitness is assumed for experiment
 
@@ -124,13 +125,41 @@ file_aux.close()
 
 ############ Evolution
 
+#maak for loop
+ 
+last_sol = fit_pop[best]
+notimproved = 0
+
+for i in range(ini_g+1, gens):
+    error = 'weg'
+    #run alle methods voor gens - ini_g+1 iterations
+
+    # crossover
+    # mutation  -> produced kind
+    # simulate kind om fitness te krijgen
+
+    # voeg kind toe aan population
+    # voeg fitness van kind toe aan population
+
+    # zoek beste uit population (hoogste fitness)
+    # repeats best eval, for stability issues (kijk demo)
+    # sla beste solution op 
+
+    # remove slechtste uit populatie ->
+        # check slides hoe (eerst slechste)
+    
+    # check of je improved op voorgaande solution
+        # ja: update best solution 
+        # nee: add 1 aan notimproved
+    # stel last solution is x aantal keer niet improved -> kill simulations
+
 
 
 
 
 ##############
 
-im = time.time() # prints total execution time for experiment
+fim = time.time() # prints total execution time for experiment
 print( '\nExecution time: '+str(round((fim-ini)/60))+' minutes \n')
 
 
