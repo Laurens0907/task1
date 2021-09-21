@@ -26,7 +26,7 @@ if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 
-experiment_name = 'task1'
+experiment_name = "individual_task1"
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
@@ -214,8 +214,6 @@ last_sol = fit_pop[best]
 notimproved = 0
 
 for i in range(ini_g+1, gens):
-    print(i)
-    error = 'weg'
     #run alle methods voor gens - ini_g+1 iterations
 
     # crossover 
@@ -240,8 +238,7 @@ for i in range(ini_g+1, gens):
         # check slides hoe (eerst slechste)
     probs = select_pop(pop, fit_pop)
     pop, fit_pop = choose_pop(pop, fit_pop, probs)
-
-
+    
     # check of je improved op voorgaande solution
         # ja: update best solution 
         # nee: add 1 aan notimproved
