@@ -63,9 +63,23 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 def evaluate(x):
     return np.array(list(map(lambda y: simulation(env,y), x)))
 
+def crossover(x):
+    a = 1
 
+def mutation(x):
+    a = 1
 
+def add_offspring(x):
+    a = 1
 
+def find_best(x):
+    a = 1
+
+def update_pop(x):
+    a = 1
+
+def check_improved(x):
+    a = 1
 #############
 
 
@@ -134,7 +148,7 @@ for i in range(ini_g+1, gens):
     error = 'weg'
     #run alle methods voor gens - ini_g+1 iterations
 
-    # crossover
+    # crossover 
     # mutation  -> produced kind
     # simulate kind om fitness te krijgen
 
@@ -154,7 +168,9 @@ for i in range(ini_g+1, gens):
     # stel last solution is x aantal keer niet improved -> kill simulations
 
 
-
+    best = np.argmax(fit_pop)
+    std  =  np.std(fit_pop)
+    mean = np.mean(fit_pop)
 
 
 ##############
