@@ -15,6 +15,7 @@ from demo_controller import player_controller
 # imports other libs
 import time
 import numpy as np
+import random
 from math import fabs,sqrt
 import glob, os
 
@@ -56,7 +57,7 @@ ini = time.time()  # sets time marker
 run_mode = 'train' # train or test
 
 # number of weights for multilayer with 10 hidden neurons
-n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
+nvar = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 
 "initialiseer dit????"
 dom_u = 1
@@ -72,15 +73,33 @@ last_best = 0
 def evaluate(x):
     return np.array(list(map(lambda y: simulation(env,y), x)))
 
-def crossover(x): 
+def crossover(x):
     "arg: population"
-    a = 1
-    "return kind"
+    "return: children"
+    parent_index = list(random.sample(range(npop), 80))
+    children = np.zeros((40,nvar))
+    f = 0
+    for i in range(0,len(parent_index),2):
+        mother_index = parent_index[i]
+        mother = x[mother_index,:]
+        father_index = parent_index[i+1]
+        father = x[father_index,:]
+        alfa = np.random.uniform(0,1)
+        portion_mother = alfa*nvar
+        children[f] = np.concatenate(mother[0:portion_mother],father[portion_mother:nvar])
+        f = f+1
+    return children
 
-def mutation(x): 
-    "arg: popolation, kids"
-    a = 1
-    "return kind na mutation"
+def mutation(x):
+    "arg: children"
+    "return: mutated children"
+    random.randint(0,len(x),replace=False)
+    mutation_index = list(random.sample(range(len(x)), round(random.uniform(0,1))*len(x)))
+    for i in range(len(mutation_index)):
+        mutation_index_genes = list(random.sample(range(nvar), round(random.uniform(0, 1)) * nvar))
+        for j in range(mutation_index_genes):
+           x[i,j] = x[i,j] + np.random.normal(0, sigma)
+    return x
 
 def add_offspring(pop, offspring, fit_pop, fit_offspring): 
     "arg: population, kids, fitness pop, fitness kind"
