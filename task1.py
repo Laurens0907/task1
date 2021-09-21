@@ -63,23 +63,35 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 def evaluate(x):
     return np.array(list(map(lambda y: simulation(env,y), x)))
 
-def crossover(x):
+def crossover(x): 
+    "arg: population"
     a = 1
+    "return kind"
 
-def mutation(x):
+def mutation(x): 
+    "arg: popolation, kind"
     a = 1
+    "return kind na mutation"
 
-def add_offspring(x):
+def add_offspring(x): 
+    "arg: population, kind, fitness pop, fitness kind"
     a = 1
+    "return nieuwe population, nieuwe fitness population"
 
-def find_best(x):
+def find_best(x): 
+    "arg: fitness population, population"
     a = 1
+    "return best"
 
-def update_pop(x):
+def update_pop(x): 
+    "arg: fitness population, population, best"
     a = 1
+    "return population - worst, fitness population - worst"
 
-def check_improved(x):
+def check_improved(x): 
+    "arg: best, last solution"
     a = 1
+    "return not_improved, last solution"
 #############
 
 
