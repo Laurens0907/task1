@@ -6,7 +6,7 @@
 ###############################################################################
 
 # imports framework
-from optimization_specialist_demo import tournament
+#from optimization_specialist_demo import tournament
 import sys
 sys.path.insert(0, 'evoman')
 from environment import Environment
@@ -57,17 +57,21 @@ ini = time.time()  # sets time marker
 run_mode = 'train' # train or test
 
 # number of weights for multilayer with 10 hidden neurons
-nvar = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
+n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 20
-gens = 3
+npop = 100
+gens = 30
 mutation = 0.2
 last_best = 0
 
 #############
+
+def simulation(env,x):
+    f,p,e,t = env.play(pcont=x)
+    return f
 
 # evaluation
 def evaluate(x):
@@ -77,7 +81,7 @@ def crossover(x):
     "arg: population"
     "return: children"
     parent_index = list(random.sample(range(npop), 80))
-    children = np.zeros((40,nvar))
+    children = np.zeros((40,n_vars))
     f = 0
     for i in range(0,len(parent_index),2):
         mother_index = parent_index[i]
@@ -85,18 +89,18 @@ def crossover(x):
         father_index = parent_index[i+1]
         father = x[father_index,:]
         alfa = np.random.uniform(0,1)
-        portion_mother = alfa*nvar
-        children[f] = np.concatenate(mother[0:portion_mother],father[portion_mother:nvar])
+        portion_mother = int(alfa*n_vars)
+        children[f] = np.concatenate(mother[0:portion_mother],father[portion_mother:n_vars])
         f = f+1
     return children
 
-def mutation(x):
+def mutation(x, sigma = 1):
     "arg: children"
     "return: mutated children"
     random.randint(0,len(x),replace=False)
     mutation_index = list(random.sample(range(len(x)), round(random.uniform(0,1))*len(x)))
     for i in range(len(mutation_index)):
-        mutation_index_genes = list(random.sample(range(nvar), round(random.uniform(0, 1)) * nvar))
+        mutation_index_genes = list(random.sample(range(n_vars), round(random.uniform(0, 1)) * n_vars))
         for j in range(mutation_index_genes):
            x[i,j] = x[i,j] + np.random.normal(0, sigma)
     return x
@@ -238,7 +242,7 @@ for i in range(ini_g+1, gens):
         # check slides hoe (eerst slechste)
     probs = select_pop(pop, fit_pop)
     pop, fit_pop = choose_pop(pop, fit_pop, probs)
-    
+
     # check of je improved op voorgaande solution
         # ja: update best solution 
         # nee: add 1 aan notimproved
