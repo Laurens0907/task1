@@ -62,8 +62,8 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 100
-gens = 30
+npop = 10
+gens = 2
 mutation = 0.2
 last_best = 0
 
@@ -80,8 +80,8 @@ def evaluate(x):
 def crossover(x):
     "arg: population"
     "return: children"
-    parent_index = list(random.sample(range(npop), 80))
-    children = np.zeros((40,n_vars))
+    parent_index = list(random.sample(range(npop), 8))
+    children = np.zeros((4,n_vars))
     f = 0
     for i in range(0,len(parent_index),2):
         mother_index = parent_index[i]
@@ -90,14 +90,14 @@ def crossover(x):
         father = x[father_index,:]
         alfa = np.random.uniform(0,1)
         portion_mother = int(alfa*n_vars)
-        children[f] = np.concatenate(mother[0:portion_mother],father[portion_mother:n_vars])
+        children[f] = np.append(mother[0:portion_mother],father[portion_mother:n_vars])
         f = f+1
     return children
 
 def mutation(x, sigma = 1):
     "arg: children"
     "return: mutated children"
-    random.randint(0,len(x),replace=False)
+    # random.randint(0,len(x),replace=False)
     mutation_index = list(random.sample(range(len(x)), round(random.uniform(0,1))*len(x)))
     for i in range(len(mutation_index)):
         mutation_index_genes = list(random.sample(range(n_vars), round(random.uniform(0, 1)) * n_vars))
@@ -121,7 +121,7 @@ def find_best(pop, fit_pop):
     "return best"
 
 def calc_psel(m, rank, s = 1.5):
-    psel = ( (2-s) / m ) + ( ( 2*i*(s-1) ) / ( m * (m-1)))
+    psel = ( (2-s) / m ) + ( ( 2*rank*(s-1) ) / ( m * (m-1)))
     return psel
 
 def select_pop(pop, fit_pop): 
@@ -214,8 +214,8 @@ file_aux.close()
 
 #maak for loop
  
-last_sol = fit_pop[best]
-notimproved = 0
+last = fit_pop[best]
+not_improved = 0
 
 for i in range(ini_g+1, gens):
     #run alle methods voor gens - ini_g+1 iterations
@@ -256,7 +256,7 @@ for i in range(ini_g+1, gens):
     std  =  np.std(fit_pop)
     mean = np.mean(fit_pop)
 
-
+print(fit_pop[best])
 ##############
 
 fim = time.time() # prints total execution time for experiment
