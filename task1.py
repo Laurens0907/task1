@@ -64,7 +64,7 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 dom_u = 1
 dom_l = -1
 npop = 10
-gens = 5
+gens = 2
 mutation = 0.2
 last_best = 0
 
@@ -90,8 +90,9 @@ def crossover(x):
         father_index = parent_index[i+1]
         father = x[father_index,:]
         alfa = np.random.uniform(0,1)
-        portion_mother = int(alfa*n_vars)
-        children[f] = np.append(mother[0:portion_mother],father[portion_mother:n_vars])
+        children[f] = alfa*mother + (1-alfa)*father
+        # portion_mother = int(alfa*n_vars)
+        # children[f] = np.append(mother[0:portion_mother],father[portion_mother:n_vars])
         f = f+1
     return children
 
