@@ -63,7 +63,7 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 dom_u = 1
 dom_l = -1
 npop = 10
-gens = 2
+gens = 5
 mutation = 0.2
 last_best = 0
 
@@ -80,8 +80,8 @@ def evaluate(x):
 def crossover(x):
     "arg: population"
     "return: children"
-    parent_index = list(random.sample(range(npop), 8))
-    children = np.zeros((4,n_vars))
+    parent_index = list(random.sample(range(npop), 80))
+    children = np.zeros((40,n_vars))
     f = 0
     for i in range(0,len(parent_index),2):
         mother_index = parent_index[i]
@@ -101,7 +101,7 @@ def mutation(x, sigma = 1):
     mutation_index = list(random.sample(range(len(x)), round(random.uniform(0,1))*len(x)))
     for i in range(len(mutation_index)):
         mutation_index_genes = list(random.sample(range(n_vars), round(random.uniform(0, 1)) * n_vars))
-        for j in range(mutation_index_genes):
+        for j in range(len(mutation_index_genes)):
            x[i,j] = x[i,j] + np.random.normal(0, sigma)
     return x
 
@@ -144,13 +144,13 @@ def choose_pop(pop, fit_pop, probs):
     fit_pop = fit_pop[chosen]
     return pop, fit_pop
 
-def check_improved(best, last, not_improved): 
+def check_improved(current, last, not_improved): 
     "arg: best, last solution, not_improved"
-    if best > last:
-        last = best
+    if current > last:
         not_improved = 0
     else:
         not_improved += 1
+    last = current
     return last, not_improved
     "return not_improved, last solution"
 #############
@@ -214,7 +214,7 @@ file_aux.close()
 
 #maak for loop
  
-last = fit_pop[best]
+last_mean = np.mean(fit_pop)
 not_improved = 0
 
 for i in range(ini_g+1, gens):
@@ -247,17 +247,37 @@ for i in range(ini_g+1, gens):
         # ja: update best solution 
         # nee: add 1 aan notimproved
     # stel last solution is x aantal keer niet improved -> kill simulations
-    last, not_improved = check_improved(best, last, not_improved)
-    if not_improved == 10:
-        not_improved = 0 
-        "is ff om error te voorkomen"
 
     best = np.argmax(fit_pop)
     std  =  np.std(fit_pop)
     mean = np.mean(fit_pop)
 
-print(fit_pop[best])
+    last_mean, not_improved = check_improved(mean, last_mean, not_improved)
+
 ##############
+
+    # saves results
+    file_aux  = open(experiment_name+'/results.txt','a')
+    print( '\n GENERATION '+str(i)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
+    file_aux.write('\n'+str(i)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
+    file_aux.close()
+
+    # saves generation number
+    file_aux  = open(experiment_name+'/gen.txt','w')
+    file_aux.write(str(i))
+    file_aux.close()
+
+    # saves file with the best solution
+    np.savetxt(experiment_name+'/best.txt',pop[best])
+
+    # saves simulation state
+    solutions = [pop, fit_pop]
+    env.update_solutions(solutions)
+    env.save_state()
+
+    if not_improved == 10:
+        break
+        "is ff om error te voorkomen"
 
 fim = time.time() # prints total execution time for experiment
 print( '\nExecution time: '+str(round((fim-ini)/60))+' minutes \n')
