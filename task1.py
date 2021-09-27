@@ -55,6 +55,7 @@ ini = time.time()  # sets time marker
 # genetic algorithm params
 
 run_mode = 'train' # train or test
+selection_mode = 'tournament'
 
 # number of weights for multilayer with 10 hidden neurons
 n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
@@ -80,8 +81,8 @@ def evaluate(x):
 def crossover(x):
     "arg: population"
     "return: children"
-    parent_index = list(random.sample(range(npop), 80))
-    children = np.zeros((40,n_vars))
+    parent_index = list(random.sample(range(npop), int(0.8*npop)))
+    children = np.zeros((int(0.4*npop),n_vars))
     f = 0
     for i in range(0,len(parent_index),2):
         mother_index = parent_index[i]
@@ -139,10 +140,28 @@ def select_pop(pop, fit_pop):
 
 def choose_pop(pop, fit_pop, probs):
     chosen = np.random.choice(pop.shape[0], npop , p=probs, replace=False)
-    chosen = np.append(chosen[1:],best)
     pop = pop[chosen]
     fit_pop = fit_pop[chosen]
     return pop, fit_pop
+
+def tournament(pop, fit_pop, probs):
+    m = len(pop)
+    winners = []
+    for i in range(npop):
+        contenders = np.random.choice(pop.shape[0], 2 , p=probs, replace=False)
+        winner = battle(contenders, fit_pop)
+        winners.append(winner)
+        probs[winner] = 0
+        probs = probs / np.sum(probs)
+    pop = pop[winners]
+    fit_pop = fit_pop[winners]
+    return pop, fit_pop
+
+def battle(contenders, fit_pop):
+    fit_battle = fit_pop[contenders]
+    winner = contenders[np.argmax(fit_battle)]
+    return winner
+
 
 def check_improved(current, last, not_improved): 
     "arg: best, last solution, not_improved"
@@ -240,8 +259,17 @@ for i in range(ini_g+1, gens):
 
     # remove slechtste uit populatie (nieuwe selectie voor populatie) ->
         # check slides hoe (eerst slechste)
+    
     probs = select_pop(pop, fit_pop)
-    pop, fit_pop = choose_pop(pop, fit_pop, probs)
+
+    "Change selection_mode to selection for linear ranking selection"
+    if selection_mode == 'selection':
+        pop, fit_pop = choose_pop(pop, fit_pop, probs)
+
+    "Change selection_mode to tournament for tournament selection"
+    if selection_mode == 'tournament':
+        pop, fit_pop = tournament(pop, fit_pop, probs)
+
 
     # check of je improved op voorgaande solution
         # ja: update best solution 
