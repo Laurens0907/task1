@@ -63,11 +63,10 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 50
-gens = 20
+npop = 10
+gens = 2
 mutation = 0.2
 last_best = 0
-experiment_number = 1
 
 #############
 
@@ -118,7 +117,7 @@ def add_offspring(pop, offspring, fit_pop, fit_offspring):
 def find_best(pop, fit_pop): 
     "arg: fitness population, population"
     best = np.argmax(fit_pop)
-    fit_pop[best] = float(evaluate(np.array([pop[best] ]))[0]) # repeats best eval, for stability issues
+    fit_pop[best] = float(evaluate(np.array([pop[best]]))[0]) # repeats best eval, for stability issues
     best_fit = fit_pop[best]
     return best_fit
     "return best"
@@ -191,52 +190,41 @@ if run_mode =='test':
 
 # initializes population loading old solutions or generating new ones
 
-print( '\nNEW EVOLUTION\n')
+if not os.path.exists(experiment_name+'/evoman_solstate'):
 
-pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
-fit_pop = evaluate(pop)
-best = np.argmax(fit_pop)
-mean = np.mean(fit_pop)
-std = np.std(fit_pop)
-ini_g = 0
-solutions = [pop, fit_pop]
-env.update_solutions(solutions)
+    print( '\nNEW EVOLUTION\n')
 
-# if not os.path.exists(experiment_name+'/evoman_solstate'):
+    pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
+    fit_pop = evaluate(pop)
+    best = np.argmax(fit_pop)
+    mean = np.mean(fit_pop)
+    std = np.std(fit_pop)
+    ini_g = 0
+    solutions = [pop, fit_pop]
+    env.update_solutions(solutions)
 
-#     print( '\nNEW EVOLUTION\n')
+else:
 
-#     pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
-#     fit_pop = evaluate(pop)
-#     best = np.argmax(fit_pop)
-#     mean = np.mean(fit_pop)
-#     std = np.std(fit_pop)
-#     ini_g = 0
-#     solutions = [pop, fit_pop]
-#     env.update_solutions(solutions)
+    print( '\nCONTINUING EVOLUTION\n')
 
-# else:
+    env.load_state()
+    pop = env.solutions[0]
+    fit_pop = env.solutions[1]
 
-#     print( '\nCONTINUING EVOLUTION\n')
+    best = np.argmax(fit_pop)
+    mean = np.mean(fit_pop)
+    std = np.std(fit_pop)
 
-#     env.load_state()
-#     pop = env.solutions[0]
-#     fit_pop = env.solutions[1]
-
-#     best = np.argmax(fit_pop)
-#     mean = np.mean(fit_pop)
-#     std = np.std(fit_pop)
-
-#     # finds last generation number
-#     file_aux  = open(experiment_name+'/gen.txt','r')
-#     ini_g = int(file_aux.readline())
-#     file_aux.close()
+    # finds last generation number
+    file_aux  = open(experiment_name+'/gen.txt','r')
+    ini_g = int(file_aux.readline())
+    file_aux.close()
 
 
 
 
 # saves results for first pop
-file_aux  = open(experiment_name+'/results_{}.txt'.format(experiment_number),'a')
+file_aux  = open(experiment_name+'/results.txt','a')
 file_aux.write('\n\ngen best mean std')
 print( '\n GENERATION '+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
 file_aux.write('\n'+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
@@ -268,7 +256,7 @@ for i in range(ini_g+1, gens):
     # zoek beste uit population (hoogste fitness)
     # repeats best eval, for stability issues (kijk demo)
     # sla beste solution op 
-    best_fit = find_best(pop, fit_pop)
+    #best_fit = find_best(pop, fit_pop)
 
     # remove slechtste uit populatie (nieuwe selectie voor populatie) ->
         # check slides hoe (eerst slechste)
@@ -298,18 +286,18 @@ for i in range(ini_g+1, gens):
 ##############
 
     # saves results
-    file_aux  = open(experiment_name+'/results_{}.txt'.format(experiment_number),'a')
+    file_aux  = open(experiment_name+'/results.txt','a')
     print( '\n GENERATION '+str(i)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
     file_aux.write('\n'+str(i)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
     file_aux.close()
 
     # saves generation number
-    file_aux  = open(experiment_name+'/gen_{}.txt'.format(experiment_number),'w')
+    file_aux  = open(experiment_name+'/gen.txt','w')
     file_aux.write(str(i))
     file_aux.close()
 
     # saves file with the best solution
-    np.savetxt(experiment_name+'/best_{}.txt'.format(experiment_number),pop[best])
+    np.savetxt(experiment_name+'/best.txt',pop[best])
 
     # saves simulation state
     solutions = [pop, fit_pop]
