@@ -55,7 +55,8 @@ ini = time.time()  # sets time marker
 # genetic algorithm params
 
 run_mode = 'test' # train or test
-selection_mode = 'tournament'
+selection_mode = 'tournament' 
+crossover_mode = 'arithmetic' # arithmetic or one_point
 
 # number of weights for multilayer with 10 hidden neurons
 n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
@@ -69,6 +70,7 @@ mutation = 0.2
 last_best = 0
 experiment_number = 1
 enemies = 2
+
 
 #############
 
@@ -91,13 +93,15 @@ def crossover(x):
         mother = x[mother_index,:]
         father_index = parent_index[i+1]
         father = x[father_index,:]
-        alfa = np.random.uniform(0,1)
-        children[f] = alfa*mother + (1-alfa)*father
-        # portion_mother = int(alfa*n_vars)
-        # children[f] = np.append(mother[0:portion_mother],father[portion_mother:n_vars])
+        if crossover_mode == 'single_arithmic':
+            alfa = np.random.uniform(0,1)
+            children[f] = alfa*mother + (1-alfa)*father
+        if crossover_mode == 'one_point':
+            portion_mother = int(alfa*n_vars)
+            children[f] = np.append(mother[0:portion_mother],father[portion_mother:n_vars])
         f = f+1
     return children
-
+    
 def mutation(x, sigma = 1):
     "arg: children"
     "return: mutated children"
