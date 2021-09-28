@@ -183,15 +183,15 @@ def check_improved(current, last, not_improved):
 
 # loads file with the best solution for testing
 if run_mode =='test':
-    file_aux  = open(experiment_name+'/test_run_{}_{}.txt'.format(enemies, experiment_number),'a')
+    file_aux  = open(experiment_name+'/boxplot_{}_{}_{}.txt'.format(enemies, experiment_number, selection_mode),'a')
     for test_run in range(5):
-        bsol = np.loadtxt(experiment_name+'/best_{}.txt'.format(experiment_number))
+        bsol = np.loadtxt(experiment_name+'/best_{}_{}_{}.txt'.format(enemies, experiment_number, selection_mode))
         print( '\n RUNNING SAVED BEST SOLUTION \n')
         #env.update_parameter('speed','normal')
         #fitness = evaluate([bsol])[0]
         f, p, e, t = env.play(pcont=bsol)
         gain = p - e
-        file_aux.write(str(gain) + ',')
+        file_aux.write(str(gain) + '\n')
     file_aux.close()
 
 
@@ -247,7 +247,7 @@ env.update_solutions(solutions)
 
 
 # saves results for first pop
-file_aux  = open(experiment_name+'/results_{}.txt'.format(experiment_number),'a')
+file_aux  = open(experiment_name+'/results_{}_{}.txt'.format(experiment_number, selection_mode),'a')
 file_aux.write('\n\ngen best mean std')
 print( '\n GENERATION '+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
 file_aux.write('\n'+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
@@ -314,7 +314,7 @@ for i in range(ini_g+1, gens):
 ##############
 
     # saves results
-    file_aux  = open(experiment_name+'/results_{}.txt'.format(experiment_number),'a')
+    file_aux  = open(experiment_name+'/results_{}_{}.txt'.format(experiment_number, selection_mode),'a')
     print( '\n GENERATION '+str(i)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
     file_aux.write('\n'+str(i)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
     file_aux.close()
@@ -325,7 +325,7 @@ for i in range(ini_g+1, gens):
     file_aux.close()
 
     # saves file with the best solution
-    np.savetxt(experiment_name+'/best_{}.txt'.format(experiment_number),pop[best])
+    np.savetxt(experiment_name+'/best_{}_{}_{}.txt'.format(enemies,experiment_number, selection_mode),pop[best])
 
     # saves simulation state
     solutions = [pop, fit_pop]
