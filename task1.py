@@ -63,10 +63,11 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 10
-gens = 2
+npop = 50
+gens = 20
 mutation = 0.2
 last_best = 0
+experiment_number = 1
 
 #############
 
@@ -190,41 +191,52 @@ if run_mode =='test':
 
 # initializes population loading old solutions or generating new ones
 
-if not os.path.exists(experiment_name+'/evoman_solstate'):
+print( '\nNEW EVOLUTION\n')
 
-    print( '\nNEW EVOLUTION\n')
+pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
+fit_pop = evaluate(pop)
+best = np.argmax(fit_pop)
+mean = np.mean(fit_pop)
+std = np.std(fit_pop)
+ini_g = 0
+solutions = [pop, fit_pop]
+env.update_solutions(solutions)
 
-    pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
-    fit_pop = evaluate(pop)
-    best = np.argmax(fit_pop)
-    mean = np.mean(fit_pop)
-    std = np.std(fit_pop)
-    ini_g = 0
-    solutions = [pop, fit_pop]
-    env.update_solutions(solutions)
+# if not os.path.exists(experiment_name+'/evoman_solstate'):
 
-else:
+#     print( '\nNEW EVOLUTION\n')
 
-    print( '\nCONTINUING EVOLUTION\n')
+#     pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
+#     fit_pop = evaluate(pop)
+#     best = np.argmax(fit_pop)
+#     mean = np.mean(fit_pop)
+#     std = np.std(fit_pop)
+#     ini_g = 0
+#     solutions = [pop, fit_pop]
+#     env.update_solutions(solutions)
 
-    env.load_state()
-    pop = env.solutions[0]
-    fit_pop = env.solutions[1]
+# else:
 
-    best = np.argmax(fit_pop)
-    mean = np.mean(fit_pop)
-    std = np.std(fit_pop)
+#     print( '\nCONTINUING EVOLUTION\n')
 
-    # finds last generation number
-    file_aux  = open(experiment_name+'/gen.txt','r')
-    ini_g = int(file_aux.readline())
-    file_aux.close()
+#     env.load_state()
+#     pop = env.solutions[0]
+#     fit_pop = env.solutions[1]
+
+#     best = np.argmax(fit_pop)
+#     mean = np.mean(fit_pop)
+#     std = np.std(fit_pop)
+
+#     # finds last generation number
+#     file_aux  = open(experiment_name+'/gen.txt','r')
+#     ini_g = int(file_aux.readline())
+#     file_aux.close()
 
 
 
 
 # saves results for first pop
-file_aux  = open(experiment_name+'/results.txt','a')
+file_aux  = open(experiment_name+'/results_{}.txt'.format(experiment_number),'a')
 file_aux.write('\n\ngen best mean std')
 print( '\n GENERATION '+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
 file_aux.write('\n'+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
@@ -286,18 +298,18 @@ for i in range(ini_g+1, gens):
 ##############
 
     # saves results
-    file_aux  = open(experiment_name+'/results.txt','a')
+    file_aux  = open(experiment_name+'/results_{}.txt'.format(experiment_number),'a')
     print( '\n GENERATION '+str(i)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
     file_aux.write('\n'+str(i)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
     file_aux.close()
 
     # saves generation number
-    file_aux  = open(experiment_name+'/gen.txt','w')
+    file_aux  = open(experiment_name+'/gen_{}.txt'.format(experiment_number),'w')
     file_aux.write(str(i))
     file_aux.close()
 
     # saves file with the best solution
-    np.savetxt(experiment_name+'/best.txt',pop[best])
+    np.savetxt(experiment_name+'/best_{}.txt'.format(experiment_number),pop[best])
 
     # saves simulation state
     solutions = [pop, fit_pop]
