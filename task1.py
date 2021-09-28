@@ -54,20 +54,21 @@ ini = time.time()  # sets time marker
 
 # genetic algorithm params
 
-run_mode = 'train' # train or test
+run_mode = 'test' # train or test
 selection_mode = 'tournament'
 
 # number of weights for multilayer with 10 hidden neurons
 n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 
 "initialiseer dit????"
-dom_u = 1
-dom_l = -1
+dom_u = 10
+dom_l = -10
 npop = 50
-gens = 20
+gens = 3
 mutation = 0.2
 last_best = 0
 experiment_number = 1
+enemies = 2
 
 #############
 
@@ -142,9 +143,7 @@ def select_pop(pop, fit_pop):
 
 def choose_pop(pop, fit_pop, probs):
     chosen = np.random.choice(pop.shape[0], npop , p=probs, replace=False)
-    pop = pop[chosen]
-    fit_pop = fit_pop[chosen]
-    return pop, fit_pop
+    return chosen
 
 def tournament(pop, fit_pop, probs):
     m = len(pop)
@@ -155,9 +154,9 @@ def tournament(pop, fit_pop, probs):
         winners.append(winner)
         probs[winner] = 0
         probs = probs / np.sum(probs)
-    pop = pop[winners]
-    fit_pop = fit_pop[winners]
-    return pop, fit_pop
+    # pop = pop[winners]
+    #fit_pop = fit_pop[winners]
+    return winners
 
 def battle(contenders, fit_pop):
     fit_battle = fit_pop[contenders]
@@ -180,11 +179,19 @@ def check_improved(current, last, not_improved):
 
 # loads file with the best solution for testing
 if run_mode =='test':
+    file_aux  = open(experiment_name+'/test_run_{}_{}.txt'.format(enemies, experiment_number),'a')
+    for test_run in range(5):
+        bsol = np.loadtxt(experiment_name+'/best_{}.txt'.format(experiment_number))
+        print( '\n RUNNING SAVED BEST SOLUTION \n')
+        #env.update_parameter('speed','normal')
+        #fitness = evaluate([bsol])[0]
+        f, p, e, t = env.play(pcont=bsol)
+        gain = p - e
+        file_aux.write(str(gain) + ',')
+    file_aux.close()
 
-    bsol = np.loadtxt(experiment_name+'/best.txt')
-    print( '\n RUNNING SAVED BEST SOLUTION \n')
-    env.update_parameter('speed','normal')
-    evaluate([bsol])
+
+
 
     sys.exit(0)
 
@@ -268,8 +275,10 @@ for i in range(ini_g+1, gens):
     # zoek beste uit population (hoogste fitness)
     # repeats best eval, for stability issues (kijk demo)
     # sla beste solution op 
-    best_fit = find_best(pop, fit_pop)
-
+    
+    #best_fit = find_best(pop, fit_pop)
+    gen_best = np.argmax(fit_pop)
+    
     # remove slechtste uit populatie (nieuwe selectie voor populatie) ->
         # check slides hoe (eerst slechste)
     
@@ -277,11 +286,14 @@ for i in range(ini_g+1, gens):
 
     "Change selection_mode to selection for linear ranking selection"
     if selection_mode == 'selection':
-        pop, fit_pop = choose_pop(pop, fit_pop, probs)
+        chosen = choose_pop(pop, fit_pop, probs)
 
     "Change selection_mode to tournament for tournament selection"
     if selection_mode == 'tournament':
-        pop, fit_pop = tournament(pop, fit_pop, probs)
+        chosen = tournament(pop, fit_pop, probs)
+    chosen = np.append(chosen[1:], gen_best)
+    pop = pop[chosen]
+    fit_pop = fit_pop[chosen]
 
 
     # check of je improved op voorgaande solution
