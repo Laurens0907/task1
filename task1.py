@@ -32,7 +32,7 @@ if not os.path.exists(experiment_name):
 
 n_hidden_neurons = 10
 
-enemies = 2
+enemies = 2 # 2 or 3 or 5
 experiment_number = 1
 
 # initializes simulation in individual evolution mode, for single static enemy.
@@ -57,8 +57,7 @@ ini = time.time()  # sets time marker
 
 # genetic algorithm params
 
-run_mode = 'test' # train or test
-selection_mode = 'tournament' 
+run_mode = 'train' # train or test
 crossover_mode = 'arithmetic' # arithmetic or one_point
 
 # number of weights for multilayer with 10 hidden neurons
@@ -67,8 +66,8 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 40
-gens = 5
+npop = 100
+gens = 20
 mutation = 0.2
 
 #############
@@ -82,8 +81,6 @@ def evaluate(x):
     return np.array(list(map(lambda y: simulation(env,y), x)))
 
 def crossover(x):
-    "arg: population"
-    "return: children"
     parent_index = list(random.sample(range(npop), int(0.8*npop)))
     children = np.zeros((int(0.4*npop),n_vars))
     f = 0
@@ -102,8 +99,6 @@ def crossover(x):
     return children
     
 def mutation(x, sigma = 1):
-    "arg: children"
-    "return: mutated children"
     # random.randint(0,len(x),replace=False)
     mutation_index = list(random.sample(range(len(x)), round(random.uniform(0,1))*len(x)))
     for i in range(len(mutation_index)):
@@ -113,36 +108,28 @@ def mutation(x, sigma = 1):
     return x
 
 def add_offspring(pop, offspring, fit_pop, fit_offspring): 
-    "arg: population, kids, fitness pop, fitness kind"
     pop = np.vstack((pop, offspring))
     fit_pop = np.append(fit_pop, fit_offspring)
     return pop, fit_pop
-    "return nieuwe population, nieuwe fitness population"
 
 def find_best(pop, fit_pop): 
-    "arg: fitness population, population"
     best = np.argmax(fit_pop)
     fit_pop[best] = float(evaluate(np.array([pop[best] ]))[0]) # repeats best eval, for stability issues
     best_fit = fit_pop[best]
     return best_fit
-    "return best"
 
 def calc_psel(m, rank, s = 1.5):
     psel = ( (2-s) / m ) + ( ( 2*rank*(s-1) ) / ( m * (m-1)))
     return psel
 
 def select_pop(pop, fit_pop): 
-    "select simpel and select door tournament"
     m = len(pop)
     probs = np.zeros(m)
     ranked_fit = np.argsort(fit_pop)
     for rank, i in enumerate(ranked_fit):
         psel = calc_psel(m, rank)
         probs[i] = psel
-    "arg: fitness population, population, best"
-
     return probs
-    "return population - worst, fitness population - worst"
 
 def choose_pop(pop, fit_pop, probs):
     chosen = np.random.choice(pop.shape[0], npop , p=probs, replace=False)
@@ -151,14 +138,12 @@ def choose_pop(pop, fit_pop, probs):
 def tournament(pop, fit_pop, probs):
     m = len(pop)
     winners = []
-    for i in range(npop):
+    for i in range(npop-1):
         contenders = np.random.choice(pop.shape[0], 2 , p=probs, replace=False)
         winner = battle(contenders, fit_pop)
         winners.append(winner)
         probs[winner] = 0
         probs = probs / np.sum(probs)
-    # pop = pop[winners]
-    #fit_pop = fit_pop[winners]
     return winners
 
 def battle(contenders, fit_pop):
@@ -166,16 +151,13 @@ def battle(contenders, fit_pop):
     winner = contenders[np.argmax(fit_battle)]
     return winner
 
-
 def check_improved(current, last, not_improved): 
-    "arg: best, last solution, not_improved"
     if current > last:
         not_improved = 0
     else:
         not_improved += 1
     last = current
     return last, not_improved
-    "return not_improved, last solution"
 #############
 
 
@@ -254,50 +236,41 @@ file_aux.close()
 
 ############ Evolution
 
-#maak for loop
  
 last_mean = np.mean(fit_pop)
 not_improved = 0
 
 for i in range(ini_g+1, gens):
-    #run alle methods voor gens - ini_g+1 iterations
-
-    # crossover 
+    " crossover produces offspring "
     offspring = crossover(pop)
 
-    # mutation  -> produced kind
+    " mutation of arbitrary offspring "
     offspring = mutation(offspring)
 
-    # simulate kind om fitness te krijgen
+    " run a single game for every offspring to get fitness "
     fit_offspring = evaluate(offspring)
 
-    # voeg kind toe aan population
-    # voeg fitness van kind toe aan population
+    " add characteristics of offspring to population "
     pop, fit_pop = add_offspring(pop, offspring, fit_pop, fit_offspring)
     
-    # remove slechtste uit populatie (nieuwe selectie voor populatie) ->
-        # check slides hoe (eerst slechste)
-    
+    " calculate probability to be selected based on ranking "
     probs = select_pop(pop, fit_pop)
 
-    "Change selection_mode to selection for linear ranking selection"
-    # if selection_mode == 'selection':
-    #     chosen = choose_pop(pop, fit_pop, probs)
+    " choose new population through a designed tournament "
+    chosen = tournament(pop, fit_pop, probs)
 
-    "Change selection_mode to tournament for tournament selection"
-    if selection_mode == 'tournament':
-        chosen = tournament(pop, fit_pop, probs)
-
+    " retrieve gens best individual and manually add it to new population"
     best = np.argmax(fit_pop)   
-    chosen = np.append(chosen[1:], best)
+    chosen = np.append(chosen, best)
     pop = pop[chosen]
     fit_pop = fit_pop[chosen]
 
-    # save statistics 
+    " save statistics "
     best = np.argmax(fit_pop)
     std  =  np.std(fit_pop)
     mean = np.mean(fit_pop)
 
+    " check if mean has improved "
     last_mean, not_improved = check_improved(mean, last_mean, not_improved)
 
 ##############
