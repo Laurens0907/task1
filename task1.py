@@ -33,7 +33,7 @@ if not os.path.exists(experiment_name):
 n_hidden_neurons = 10
 
 enemies = 2 # 2 or 3 or 5
-experiment_number = 1
+experiment_number = 0 # 10 experiments, so numbers 0 untill 9
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
