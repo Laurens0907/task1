@@ -58,7 +58,7 @@ ini = time.time()  # sets time marker
 # genetic algorithm params
 
 run_mode = 'train' # train or test
-crossover_mode = 'arithmetic' # arithmetic or one_point
+crossover_mode = 'one_point' # arithmetic or one_point
 
 # number of weights for multilayer with 10 hidden neurons
 n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
@@ -68,8 +68,6 @@ dom_u = 1
 dom_l = -1
 npop = 100
 gens = 20
-mutation = 0.2
-
 #############
 
 def simulation(env,x):
@@ -89,8 +87,8 @@ def crossover(x):
         mother = x[mother_index,:]
         father_index = parent_index[i+1]
         father = x[father_index,:]
+        alfa = np.random.uniform(0, 1)
         if crossover_mode == 'arithmetic':
-            alfa = np.random.uniform(0,1)
             children[f] = alfa*mother + (1-alfa)*father
         if crossover_mode == 'one_point':
             portion_mother = int(alfa*n_vars)
