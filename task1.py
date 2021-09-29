@@ -68,7 +68,6 @@ dom_u = 1
 dom_l = -1
 npop = 100
 gens = 20
-mutation = 0.2
 
 #############
 
@@ -181,7 +180,7 @@ if run_mode =='test':
     sys.exit(0)
 
 
-# initializes population loading old solutions or generating new ones
+# generating new population
 
 print( '\nNEW EVOLUTION\n')
 
