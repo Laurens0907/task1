@@ -32,9 +32,12 @@ if not os.path.exists(experiment_name):
 
 n_hidden_neurons = 10
 
+enemies = 2
+experiment_number = 1
+
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
-                  enemies=[2],
+                  enemies=[enemies],
                   playermode="ai",
                   player_controller=player_controller(n_hidden_neurons),
                   enemymode="static",
@@ -62,15 +65,11 @@ crossover_mode = 'arithmetic' # arithmetic or one_point
 n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 
 "initialiseer dit????"
-dom_u = 10
-dom_l = -10
-npop = 50
-gens = 3
+dom_u = 1
+dom_l = -1
+npop = 40
+gens = 5
 mutation = 0.2
-last_best = 0
-experiment_number = 1
-enemies = 2
-
 
 #############
 
@@ -93,7 +92,7 @@ def crossover(x):
         mother = x[mother_index,:]
         father_index = parent_index[i+1]
         father = x[father_index,:]
-        if crossover_mode == 'single_arithmic':
+        if crossover_mode == 'arithmetic':
             alfa = np.random.uniform(0,1)
             children[f] = alfa*mother + (1-alfa)*father
         if crossover_mode == 'one_point':
@@ -183,9 +182,9 @@ def check_improved(current, last, not_improved):
 
 # loads file with the best solution for testing
 if run_mode =='test':
-    file_aux  = open(experiment_name+'/boxplot_{}_{}_{}.txt'.format(enemies, experiment_number, selection_mode),'a')
+    file_aux  = open(experiment_name+'/boxplot_{}_{}_{}.txt'.format(enemies, experiment_number, crossover_mode),'a')
     for test_run in range(5):
-        bsol = np.loadtxt(experiment_name+'/best_{}_{}_{}.txt'.format(enemies, experiment_number, selection_mode))
+        bsol = np.loadtxt(experiment_name+'/best_{}_{}_{}.txt'.format(enemies, experiment_number, crossover_mode))
         print( '\n RUNNING SAVED BEST SOLUTION \n')
         #env.update_parameter('speed','normal')
         #fitness = evaluate([bsol])[0]
@@ -247,7 +246,7 @@ env.update_solutions(solutions)
 
 
 # saves results for first pop
-file_aux  = open(experiment_name+'/results_{}_{}.txt'.format(experiment_number, selection_mode),'a')
+file_aux  = open(experiment_name+'/results_{}_{}_{}.txt'.format(enemies, experiment_number, crossover_mode ),'a')
 file_aux.write('\n\ngen best mean std')
 print( '\n GENERATION '+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
 file_aux.write('\n'+str(ini_g)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
@@ -275,13 +274,6 @@ for i in range(ini_g+1, gens):
     # voeg kind toe aan population
     # voeg fitness van kind toe aan population
     pop, fit_pop = add_offspring(pop, offspring, fit_pop, fit_offspring)
-
-    # zoek beste uit population (hoogste fitness)
-    # repeats best eval, for stability issues (kijk demo)
-    # sla beste solution op 
-    
-    #best_fit = find_best(pop, fit_pop)
-    gen_best = np.argmax(fit_pop)
     
     # remove slechtste uit populatie (nieuwe selectie voor populatie) ->
         # check slides hoe (eerst slechste)
@@ -289,22 +281,19 @@ for i in range(ini_g+1, gens):
     probs = select_pop(pop, fit_pop)
 
     "Change selection_mode to selection for linear ranking selection"
-    if selection_mode == 'selection':
-        chosen = choose_pop(pop, fit_pop, probs)
+    # if selection_mode == 'selection':
+    #     chosen = choose_pop(pop, fit_pop, probs)
 
     "Change selection_mode to tournament for tournament selection"
     if selection_mode == 'tournament':
         chosen = tournament(pop, fit_pop, probs)
-    chosen = np.append(chosen[1:], gen_best)
+
+    best = np.argmax(fit_pop)   
+    chosen = np.append(chosen[1:], best)
     pop = pop[chosen]
     fit_pop = fit_pop[chosen]
 
-
-    # check of je improved op voorgaande solution
-        # ja: update best solution 
-        # nee: add 1 aan notimproved
-    # stel last solution is x aantal keer niet improved -> kill simulations
-
+    # save statistics 
     best = np.argmax(fit_pop)
     std  =  np.std(fit_pop)
     mean = np.mean(fit_pop)
@@ -314,18 +303,18 @@ for i in range(ini_g+1, gens):
 ##############
 
     # saves results
-    file_aux  = open(experiment_name+'/results_{}_{}.txt'.format(experiment_number, selection_mode),'a')
+    file_aux  = open(experiment_name+'/results_{}_{}_{}.txt'.format(enemies, experiment_number, crossover_mode ),'a')
     print( '\n GENERATION '+str(i)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6)))
     file_aux.write('\n'+str(i)+' '+str(round(fit_pop[best],6))+' '+str(round(mean,6))+' '+str(round(std,6))   )
     file_aux.close()
 
     # saves generation number
-    file_aux  = open(experiment_name+'/gen_{}.txt'.format(experiment_number),'w')
+    file_aux  = open(experiment_name+'/gen_{}_{}_{}.txt'.format(enemies, experiment_number, crossover_mode ),'w')
     file_aux.write(str(i))
     file_aux.close()
 
     # saves file with the best solution
-    np.savetxt(experiment_name+'/best_{}_{}_{}.txt'.format(enemies,experiment_number, selection_mode),pop[best])
+    np.savetxt(experiment_name+'/best_{}_{}_{}.txt'.format(enemies,experiment_number, crossover_mode),pop[best])
 
     # saves simulation state
     solutions = [pop, fit_pop]
