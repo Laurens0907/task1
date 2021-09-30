@@ -57,7 +57,7 @@ ini = time.time()  # sets time marker
 
 # genetic algorithm params
 
-run_mode = 'train' # train or test
+run_mode = 'test' # train or test
 crossover_mode = 'one_point' # arithmetic or one_point
 
 # number of weights for multilayer with 10 hidden neurons
