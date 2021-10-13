@@ -31,7 +31,7 @@ if not os.path.exists(experiment_name):
 
 n_hidden_neurons = 10
 
-enemies = [2, 3]  # 2 or 3 or 5
+enemies = [2, 4]  # 2 or 3 or 5
 experiment_number = 0  # 10 experiments, so numbers 0 untill 9
 
 # initializes simulation in individual evolution mode, for single static enemy.
@@ -56,7 +56,7 @@ ini = time.time()  # sets time marker
 # genetic algorithm params
 
 run_mode = 'train'  # train or test
-crossover_mode = 'arithmetic'  # arithmetic or one_point
+crossover_mode = 'one_point'  # arithmetic or one_point
 
 # number of weights for multilayer with 10 hidden neurons
 n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5
@@ -96,8 +96,9 @@ def crossover(x):
         if crossover_mode == 'one_point':
             portion_mother = int(alfa * n_vars)
             children[f] = np.append(mother[0:portion_mother], father[portion_mother:n_vars])
+            children[f+1] = np.append(father[0:portion_mother], mother[portion_mother:n_vars])
         f = f + 2
-    return children
+    return children, parent_index
 
 
 def mutation(x, sigma=1):
@@ -109,6 +110,57 @@ def mutation(x, sigma=1):
             x[i, j] = x[i, j] + np.random.normal(0, sigma)
     return x
 
+def crowding(pop,  offspring, parents, fit_offspring, fit_pop):
+    pop_new = np.zeros((npop, n_vars))
+    fit_pop_new =np.zeros(npop)
+    for i in range(0,len(parents), 2):
+        p1 = pop[parents[i],:]
+        p2 = pop[parents[i+1],:]
+        c1 = offspring[i]
+        c2 = offspring[i+1]
+        dist_matrix = distance_matrix([p1, p2], [c1, c2])
+        couple = short_dist(dist_matrix)
+        if couple == '1,1':
+            winner1 = battle_crowding(fit_pop, fit_offspring, parents[i], i)
+            winner2 = battle_crowding(fit_pop, fit_offspring, parents[i+1], i+1)
+            if winner1 == 'parent':
+                pop_new[i] = p1
+                fit_pop_new[i] = fit_pop[parents[i]]
+            else:
+                pop_new[i] = c1
+                fit_pop_new[i] = fit_offspring[i]
+            if winner2 == 'parent':
+                pop_new[i+1] = p2
+                fit_pop_new[i+1] = fit_pop[parents[i+1]]
+            else:
+                pop_new[i+1] = c2
+                fit_pop_new[i+1] = fit_offspring[i+1]
+        else:
+            winner1 = battle_crowding(fit_pop, fit_offspring, parents[i], i+1)
+            winner2 = battle_crowding(fit_pop, fit_offspring, parents[i+1], i)
+            if winner1 == 'parent':
+                pop_new[i] = p1
+                fit_pop_new[i] = fit_pop[parents[i]]
+            else:
+                pop_new[i] = c2
+                fit_pop_new[i] = fit_pop[parents[i+1]]
+            if winner2 == 'parent':
+                pop_new[i] = p2
+                fit_pop_new[i+1] = fit_pop[parents[i+1]]
+            else:
+                pop_new[i] = c1
+                fit_pop_new[i+1] = fit_pop[parents[i+1]]
+    return pop_new, fit_pop_new
+        
+
+
+
+def short_dist(dist):
+    if dist[0][0] + dist[1][1] < dist[0][1] + dist[1][0]:
+        couple = '1,1'
+    else:
+        couple = '1,2'
+    return couple
 
 def add_offspring(pop, offspring, fit_pop, fit_offspring):
     pop = np.vstack((pop, offspring))
@@ -154,6 +206,15 @@ def tournament(pop, fit_pop, probs):
         probs = probs / np.sum(probs)
     return winners
 
+def battle_crowding(fit_pop, fit_offspring, parent, child):
+    fit_parent = fit_pop[parent]
+    fit_child = fit_offspring[child]
+    if fit_parent > fit_child:
+        winner = 'parent'
+    else:
+        winner = 'child'
+    return winner
+
 
 def battle(contenders, fit_pop):
     fit_battle = fit_pop[contenders]
@@ -169,6 +230,12 @@ def check_improved(current, last, not_improved):
     last = current
     return last, not_improved
 
+def distance_matrix(parents, children):
+    distance_matrix = np.zeros((2,2))
+    for i in range(2):
+        for j in range(2):
+            distance_matrix[i][j] = np.sqrt(np.sum((parents[i] - children[j])**2))
+    return distance_matrix
 
 #############
 
@@ -249,7 +316,7 @@ not_improved = 0
 
 for i in range(ini_g + 1, gens):
     " crossover produces offspring "
-    offspring = crossover(pop)
+    offspring, parents = crossover(pop)
 
     " mutation of arbitrary offspring "
     offspring = mutation(offspring)
@@ -258,22 +325,26 @@ for i in range(ini_g + 1, gens):
     fit_offspring = evaluate(offspring)
 
     " add characteristics of offspring to population "
-    pop, fit_pop = add_offspring(pop, offspring, fit_pop, fit_offspring)
+    #pop, fit_pop = add_offspring(pop, offspring, fit_pop, fit_offspring)
+
+    "crowding"
+    pop, fit_pop = crowding(pop, offspring, parents, fit_offspring, fit_pop)
 
     " calculate probability to be selected based on ranking "
-    probs = select_pop(pop, fit_pop)
+   # probs = select_pop(pop, fit_pop)
 
     " choose new population through a designed tournament "
-    chosen = tournament(pop, fit_pop, probs)
+    #chosen = tournament(pop, fit_pop, probs)
 
     " retrieve gens best individual and manually add it to new population"
-    best = np.argmax(fit_pop)
-    chosen = np.append(chosen, best)
-    pop = pop[chosen]
-    fit_pop = fit_pop[chosen]
+    # best = np.argmax(fit_pop)
+    # chosen = np.append(chosen, best)
+    # pop = pop[chosen]
+    # fit_pop = fit_pop[chosen]
 
     " save statistics "
     best = np.argmax(fit_pop)
+
     std = np.std(fit_pop)
     mean = np.mean(fit_pop)
 
