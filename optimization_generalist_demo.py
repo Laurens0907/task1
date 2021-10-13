@@ -57,8 +57,8 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 
 dom_u = 1
 dom_l = -1
-npop = 100
-gens = 30
+npop = 5
+gens = 2
 mutation = 0.2
 last_best = 0
 
