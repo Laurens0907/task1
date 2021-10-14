@@ -9,6 +9,8 @@
 # from optimization_specialist_demo import tournament
 import sys
 
+from numpy.lib.nanfunctions import _nancumprod_dispatcher
+
 sys.path.insert(0, 'evoman')
 from environment import Environment
 from demo_controller import player_controller
@@ -88,25 +90,45 @@ def limits(x):
     else:
         return x
 
-def crossover(x):
-    parent_index = list(random.choices(range(npop), k= int(npop)))
+# def crossover(x):
+#     parent_index = list(random.choices(range(npop), k= int(npop)))
+#     children = np.zeros((int(npop), n_vars))
+#     f = 0
+#     for i in range(0, len(parent_index), 2):
+#         mother_index = parent_index[i]
+#         mother = x[mother_index, :]
+#         father_index = parent_index[i + 1]
+#         father = x[father_index, :]
+#         alfa = np.random.uniform(0, 1)
+#         if crossover_mode == 'arithmetic':
+#             children[f] = alfa * mother + (1 - alfa) * father
+#             children[f+1] = (1-alfa) * mother + alfa * father
+#         if crossover_mode == 'one_point':
+#             portion_mother = int(alfa * n_vars)
+#             children[f] = np.append(mother[0:portion_mother], father[portion_mother:n_vars])
+#             children[f+1] = np.append(father[0:portion_mother], mother[portion_mother:n_vars])
+#         f = f + 2
+#     return children, parent_index
+
+
+def crossover(pop):
+    parent_index = []
     children = np.zeros((int(npop), n_vars))
-    f = 0
-    for i in range(0, len(parent_index), 2):
-        mother_index = parent_index[i]
-        mother = x[mother_index, :]
-        father_index = parent_index[i + 1]
-        father = x[father_index, :]
+    for i in range(0, npop, 2):
+        c1 =  np.random.randint(0, npop, 2)
+        c2 =  np.random.randint(0, npop, 2)
+        p1 = battle(c1, fit_pop)
+        p2 = battle(c1, fit_pop)
+        parent_index.append(p1)
+        parent_index.append(p2)
+        mother = pop[p1]
+        father = pop[p2]
         alfa = np.random.uniform(0, 1)
-        if crossover_mode == 'arithmetic':
-            children[f] = alfa * mother + (1 - alfa) * father
-            children[f+1] = (1-alfa) * mother + alfa * father
-        if crossover_mode == 'one_point':
-            portion_mother = int(alfa * n_vars)
-            children[f] = np.append(mother[0:portion_mother], father[portion_mother:n_vars])
-            children[f+1] = np.append(father[0:portion_mother], mother[portion_mother:n_vars])
-        f = f + 2
-    return children, parent_index
+        children[i] = alfa * mother + (1 - alfa) * father
+        children[i+1] = (1-alfa) * mother + alfa * father
+    return children, np.array(parent_index)
+
+
 
 
 def mutation(x, sigma=1):
