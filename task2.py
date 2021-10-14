@@ -31,7 +31,7 @@ if not os.path.exists(experiment_name):
 
 n_hidden_neurons = 10
 
-enemies = [2, 4]  # 2 or 3 or 5
+enemies = [7,8]  # 2 or 3 or 5
 experiment_number = 0  # 10 experiments, so numbers 0 untill 9
 
 # initializes simulation in individual evolution mode, for single static enemy.
@@ -56,7 +56,7 @@ ini = time.time()  # sets time marker
 # genetic algorithm params
 
 run_mode = 'train'  # train or test
-crossover_mode = 'one_point'  # arithmetic or one_point
+crossover_mode = 'arithmetic'  # arithmetic or one_point
 
 # number of weights for multilayer with 10 hidden neurons
 n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5
@@ -64,10 +64,11 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 100
-gens = 10
+npop = 6
+gens = 2
+mutation_prob = 0.2
 
-
+np.random.seed(420)
 #############
 
 def simulation(env, x):
@@ -79,9 +80,16 @@ def simulation(env, x):
 def evaluate(x):
     return np.array(list(map(lambda y: simulation(env, y), x)))
 
+def limits(x):
+    if x>dom_u:
+        return dom_u
+    elif x<dom_l:
+        return dom_l
+    else:
+        return x
 
 def crossover(x):
-    parent_index = list(random.sample(range(npop), int(npop)))
+    parent_index = list(random.choices(range(npop), k= int(npop)))
     children = np.zeros((int(npop), n_vars))
     f = 0
     for i in range(0, len(parent_index), 2):
@@ -103,11 +111,17 @@ def crossover(x):
 
 def mutation(x, sigma=1):
     # random.randint(0,len(x),replace=False)
-    mutation_index = list(random.sample(range(len(x)), round(random.uniform(0, 1)) * len(x)))
-    for i in range(len(mutation_index)):
-        mutation_index_genes = list(random.sample(range(n_vars), round(random.uniform(0, 1)) * n_vars))
-        for j in range(len(mutation_index_genes)):
-            x[i, j] = x[i, j] + np.random.normal(0, sigma)
+    #mutation_index = list(random.sample(range(len(x)), round(random.uniform(0, 1)) * len(x)))
+    #for i in range(len(mutation_index)):
+    for i in range(len(x)):
+        #mutation_index_genes = list(random.sample(range(n_vars), round(random.uniform(0, 1)) * n_vars))
+        for j in range(n_vars):
+            if np.random.uniform(0 ,1) <= mutation_prob:
+                x[i][j]= x[i][j]+np.random.normal(0, 1)
+            # x[i,j] = x[i,j] + np.random.normal(0, sigma)
+            # x[i,j] = limits(x[i,j])
+
+        x[i] = np.array(list(map(lambda y: limits(y), x[i])))
     return x
 
 def crowding(pop,  offspring, parents, fit_offspring, fit_pop):
@@ -246,7 +260,7 @@ if run_mode == 'test':
     for test_run in range(5):
         bsol = np.loadtxt(experiment_name + '/best_{}_{}_{}.txt'.format(enemies, experiment_number, crossover_mode))
         print('\n RUNNING SAVED BEST SOLUTION \n')
-        # env.update_parameter('speed','normal')
+        env.update_parameter('speed','normal')
         # fitness = evaluate([bsol])[0]
         f, p, e, t = env.play(pcont=bsol)
         gain = p - e
