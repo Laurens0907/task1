@@ -66,8 +66,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 6
-gens = 2
+npop = 20
+gens = 10
 mutation_prob = 0.2
 
 np.random.seed(420)
@@ -118,14 +118,14 @@ def crossover(pop):
         c1 =  np.random.randint(0, npop, 2)
         c2 =  np.random.randint(0, npop, 2)
         p1 = battle(c1, fit_pop)
-        p2 = battle(c1, fit_pop)
+        p2 = battle(c2, fit_pop)
         parent_index.append(p1)
         parent_index.append(p2)
         mother = pop[p1]
         father = pop[p2]
         alfa = np.random.uniform(0, 1)
-        children[i] = alfa * mother + (1 - alfa) * father
-        children[i+1] = (1-alfa) * mother + alfa * father
+        children[i, :] = alfa * mother + (1 - alfa) * father
+        children[i+1, :] = (1-alfa) * mother + alfa * father
     return children, np.array(parent_index)
 
 
@@ -143,7 +143,7 @@ def mutation(x, sigma=1):
             # x[i,j] = x[i,j] + np.random.normal(0, sigma)
             # x[i,j] = limits(x[i,j])
 
-        x[i] = np.array(list(map(lambda y: limits(y), x[i])))
+        #x[i] = np.array(list(map(lambda y: limits(y), x[i])))
     return x
 
 def crowding(pop,  offspring, parents, fit_offspring, fit_pop):
@@ -154,6 +154,8 @@ def crowding(pop,  offspring, parents, fit_offspring, fit_pop):
         p2 = pop[parents[i+1],:]
         c1 = offspring[i]
         c2 = offspring[i+1]
+        print(c1)
+        print(c2)
         dist_matrix = distance_matrix([p1, p2], [c1, c2])
         couple = short_dist(dist_matrix)
         if couple == '1,1':
@@ -179,13 +181,13 @@ def crowding(pop,  offspring, parents, fit_offspring, fit_pop):
                 fit_pop_new[i] = fit_pop[parents[i]]
             else:
                 pop_new[i] = c2
-                fit_pop_new[i] = fit_pop[parents[i+1]]
+                fit_pop_new[i] = fit_offspring[i+1]
             if winner2 == 'parent':
                 pop_new[i] = p2
                 fit_pop_new[i+1] = fit_pop[parents[i+1]]
             else:
                 pop_new[i] = c1
-                fit_pop_new[i+1] = fit_pop[parents[i+1]]
+                fit_pop_new[i+1] = fit_offspring[i]
     return pop_new, fit_pop_new
         
 
