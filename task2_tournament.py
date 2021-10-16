@@ -57,7 +57,7 @@ ini = time.time()  # sets time marker
 
 # genetic algorithm params
 
-run_mode = 'train' # train or test
+run_mode = 'test' # train or test
 selection_mode = 'tournament' 
 
 # number of weights for multilayer with 10 hidden neurons
@@ -66,9 +66,10 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 50
-gens = 20
+npop = 60 # moet deelbaar zijn door 4
+gens = 2
 mutation_prob = 0.25
+runs = 10
 
 np.random.seed(84088)
 #############
@@ -150,8 +151,8 @@ def battle(contenders, fit_pop):
 # loads file with the best solution for testing
 if run_mode == 'test':
     env.update_parameter('multiplemode', 'no')
-    env.update_parameter('speed', 'normal')
-    for run in range(1,11):
+    #env.update_parameter('speed', 'normal')
+    for run in range(1,runs+1):
         file_aux = open(experiment_name + '/boxplot_{}_{}_{}.txt'.format(enemies, run, selection_mode), 'a')
         for i in range(1,9):
             env.update_parameter('enemies', [i])
@@ -163,12 +164,12 @@ if run_mode == 'test':
                 file_aux.write(str(gain) + '\n')
         file_aux.close()
 
-        sys.exit(0)
+    sys.exit(0)
 
 
 # initializes population loading old solutions or generating new ones
 
-for run in range(1,3):
+for run in range(1,runs+1):
     print( '\nNEW EVOLUTION\n')
 
     pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
