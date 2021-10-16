@@ -66,9 +66,11 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 4
-gens = 2
+npop = 50
+gens = 20
 mutation_prob = 0.25
+
+np.random.seed(84088)
 #############
 
 def simulation(env,x):
