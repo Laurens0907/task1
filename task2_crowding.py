@@ -49,18 +49,19 @@ ini = time.time()  # sets time marker
 # genetic algorithm params
 
 run_mode = 'train'  # train or test
-selection_mode = 'crowding'  # arithmetic or one_point
+selection_mode = 'crowding'  # crowding or tournament
 
 # number of weights for multilayer with 10 hidden neurons
 n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1) * 5
 
-"initialiseer dit????"
+"initialiseer dit"
 dom_u = 1
 dom_l = -1
-npop = 50  #Moet deelbaar zijn door 4!!
+npop = 60  #Moet deelbaar zijn door 4!!
 gens = 20
 offspring_per_couple = 2  #Moet 2 blijven!!!
 mutation_prob = 0.25
+runs = 10
 
 np.random.seed(84088)
 #############
@@ -79,7 +80,7 @@ def evaluate(x):
 if run_mode == 'test':
     env.update_parameter('multiplemode', 'no')
     env.update_parameter('speed', 'normal')
-    for run in range(1,11):
+    for run in range(1,runs+1):
         file_aux = open(experiment_name + '/boxplot_{}_{}_{}.txt'.format(enemies, run, selection_mode), 'a')
         for i in range(1,9):
             env.update_parameter('enemies', [i])
@@ -91,7 +92,7 @@ if run_mode == 'test':
                 file_aux.write(str(gain) + '\n')
         file_aux.close()
 
-        sys.exit(0)
+    sys.exit(0)
 
 
 ##############################################################################################
@@ -183,7 +184,7 @@ def crowding(pop,offspring,parents_index,fit_offspring,fit_pop):
     return new_pop,new_fit_pop
 ##############################################################################################
 
-for run in range(1,11):
+for run in range(1,runs+1):
     print('\nNEW EVOLUTION\n')
 
     pop_best = np.zeros((0,n_vars))
