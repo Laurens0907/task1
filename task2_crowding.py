@@ -18,7 +18,7 @@ headless = False
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
-experiment_name = "multiple_task2_clean"
+experiment_name = "task2_crowding"
 if not os.path.exists(experiment_name):
     os.makedirs(experiment_name)
 
