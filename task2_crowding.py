@@ -14,7 +14,7 @@ from math import fabs, sqrt
 import glob, os
 
 # choose this for not using visuals and thus making experiments faster
-headless = False
+headless = True
 if headless:
     os.environ["SDL_VIDEODRIVER"] = "dummy"
 
@@ -48,7 +48,7 @@ ini = time.time()  # sets time marker
 
 # genetic algorithm params
 
-run_mode = 'test'  # train or test
+run_mode = 'train'  # train or test
 selection_mode = 'crowding'  # arithmetic or one_point
 
 # number of weights for multilayer with 10 hidden neurons
@@ -57,8 +57,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 20  #Moet deelbaar zijn door 4!!
-gens = 10
+npop = 2  #Moet deelbaar zijn door 4!!
+gens = 2
 offspring_per_couple = 2  #Moet 2 blijven!!!
 mutation_prob = 0.25
 
@@ -79,45 +79,20 @@ def evaluate(x):
 if run_mode == 'test':
     env.update_parameter('multiplemode', 'no')
     env.update_parameter('speed', 'normal')
-    file_aux = open(experiment_name + '/boxplot_{}{}{}.txt'.format(enemies, experiment_number, selection_mode), 'a')
-    for i in range(1,9):
-        env.update_parameter('enemies', [i])
-        for test_run in range(5):
-            bsol = np.loadtxt(experiment_name + '/best_{}_{}_{}.txt'.format(enemies, experiment_number, selection_mode))
-            print('\n RUNNING SAVED BEST SOLUTION \n')
-        #env.update_parameter('speed','normal')
-        # fitness = evaluate([bsol])[0]
-            f, p, e, t = env.play(pcont=bsol)
-            gain = p - e
-            file_aux.write(str(gain) + '\n')
-    file_aux.close()
+    for run in range(1,11):
+        file_aux = open(experiment_name + '/boxplot_{}_{}_{}.txt'.format(enemies, run, selection_mode), 'a')
+        for i in range(1,9):
+            env.update_parameter('enemies', [i])
+            for test_run in range(5):
+                bsol = np.loadtxt(experiment_name + '/best_{}_{}_{}.txt'.format(enemies, run, selection_mode))
+                print('\n RUNNING SAVED BEST SOLUTION \n')
+                f, p, e, t = env.play(pcont=bsol)
+                gain = p - e
+                file_aux.write(str(gain) + '\n')
+        file_aux.close()
 
-    sys.exit(0)
+        sys.exit(0)
 
-
-print('\nNEW EVOLUTION\n')
-
-pop_best = np.zeros((0,n_vars))
-fit_pop_best = np.zeros(0)
-pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
-fit_pop = evaluate(pop)
-best = np.argmax(fit_pop)
-mean = np.mean(fit_pop)
-std = np.std(fit_pop)
-pop_best = np.vstack((pop_best,pop[best]))
-fit_pop_best = np.append(fit_pop_best, fit_pop[best])
-
-ini_g = 0
-solutions = [pop, fit_pop]
-env.update_solutions(solutions)
-
-file_aux = open(experiment_name + '/results_{}_{}_{}.txt'.format(enemies, experiment_number, selection_mode), 'a')
-file_aux.write('\n\ngen best mean std')
-print('\n GENERATION ' + str(ini_g) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
-    round(std, 6)))
-file_aux.write(
-    '\n' + str(ini_g) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(round(std, 6)))
-file_aux.close()
 
 ##############################################################################################
 def battle(pop,contender1,contender2):
@@ -208,44 +183,69 @@ def crowding(pop,offspring,parents_index,fit_offspring,fit_pop):
     return new_pop,new_fit_pop
 ##############################################################################################
 
-for i in range(ini_g + 1, gens):
-    " crossover produces offspring "
-    offspring, parents_index = crossover(fit_pop,pop)
+for run in range(1,11):
+    print('\nNEW EVOLUTION\n')
 
-    " run a single game for every offspring to get fitness "
-    fit_offspring = evaluate(offspring)
-
-    "crowding"
-    pop, fit_pop = crowding(pop, offspring, parents_index, fit_offspring, fit_pop)
-
-    " save statistics "
+    pop_best = np.zeros((0,n_vars))
+    fit_pop_best = np.zeros(0)
+    pop = np.random.uniform(dom_l, dom_u, (npop, n_vars))
+    fit_pop = evaluate(pop)
     best = np.argmax(fit_pop)
-    std = np.std(fit_pop)
     mean = np.mean(fit_pop)
-    pop_best = np.vstack((pop_best, pop[best]))
-    fit_pop_best = np.append(fit_pop_best,fit_pop[best])
-    overall_best = np.argmax(fit_pop_best)
-    ##############
+    std = np.std(fit_pop)
+    pop_best = np.vstack((pop_best,pop[best]))
+    fit_pop_best = np.append(fit_pop_best, fit_pop[best])
 
-    # saves results
-    file_aux = open(experiment_name + '/results_{}_{}_{}.txt'.format(enemies, experiment_number, selection_mode), 'a')
-    print('\n GENERATION ' + str(i) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
-        round(std, 6)))
-    file_aux.write(
-        '\n' + str(i) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(round(std, 6)))
-    file_aux.close()
-
-    # saves generation number
-    file_aux = open(experiment_name + '/gen_{}_{}_{}.txt'.format(enemies, experiment_number, selection_mode), 'w')
-    file_aux.write(str(i))
-    file_aux.close()
-
-    # saves file with the best solution
-    np.savetxt(experiment_name + '/best_{}_{}_{}.txt'.format(enemies, experiment_number, selection_mode), pop_best[overall_best])
-
-    # saves simulation state
+    ini_g = 0
     solutions = [pop, fit_pop]
     env.update_solutions(solutions)
-    env.save_state()
 
-env.state_to_log()  # checks environment state
+    file_aux = open(experiment_name + '/results_{}_{}_{}.txt'.format(enemies, run, selection_mode), 'a')
+    file_aux.write('\n\ngen best mean std')
+    print('\n GENERATION ' + str(ini_g) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
+        round(std, 6)))
+    file_aux.write(
+        '\n' + str(ini_g) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(round(std, 6)))
+    file_aux.close()
+
+    for i in range(ini_g + 1, gens):
+        " crossover produces offspring "
+        offspring, parents_index = crossover(fit_pop,pop)
+
+        " run a single game for every offspring to get fitness "
+        fit_offspring = evaluate(offspring)
+
+        "crowding"
+        pop, fit_pop = crowding(pop, offspring, parents_index, fit_offspring, fit_pop)
+
+        " save statistics "
+        best = np.argmax(fit_pop)
+        std = np.std(fit_pop)
+        mean = np.mean(fit_pop)
+        pop_best = np.vstack((pop_best, pop[best]))
+        fit_pop_best = np.append(fit_pop_best,fit_pop[best])
+        overall_best = np.argmax(fit_pop_best)
+        ##############
+
+        # saves results
+        file_aux = open(experiment_name + '/results_{}_{}_{}.txt'.format(enemies, run, selection_mode), 'a')
+        print('\n GENERATION ' + str(i) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(
+            round(std, 6)))
+        file_aux.write(
+            '\n' + str(i) + ' ' + str(round(fit_pop[best], 6)) + ' ' + str(round(mean, 6)) + ' ' + str(round(std, 6)))
+        file_aux.close()
+
+        # saves generation number
+        file_aux = open(experiment_name + '/gen_{}_{}_{}.txt'.format(enemies, run, selection_mode), 'w')
+        file_aux.write(str(i))
+        file_aux.close()
+
+        # saves file with the best solution
+        np.savetxt(experiment_name + '/best_{}_{}_{}.txt'.format(enemies, run, selection_mode), pop_best[overall_best])
+
+        # saves simulation state
+        solutions = [pop, fit_pop]
+        env.update_solutions(solutions)
+        env.save_state()
+
+    env.state_to_log()  # checks environment state
