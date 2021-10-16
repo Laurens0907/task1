@@ -225,7 +225,6 @@ for i in range(ini_g + 1, gens):
     pop_best = np.vstack((pop_best, pop[best]))
     fit_pop_best = np.append(fit_pop_best,fit_pop[best])
     overall_best = np.argmax(fit_pop_best)
-    print(fit_pop_best[overall_best])
     ##############
 
     # saves results
