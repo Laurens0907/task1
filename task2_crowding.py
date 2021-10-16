@@ -57,8 +57,8 @@ n_vars = (env.get_num_sensors() + 1) * n_hidden_neurons + (n_hidden_neurons + 1)
 "initialiseer dit????"
 dom_u = 1
 dom_l = -1
-npop = 2  #Moet deelbaar zijn door 4!!
-gens = 2
+npop = 50  #Moet deelbaar zijn door 4!!
+gens = 20
 offspring_per_couple = 2  #Moet 2 blijven!!!
 mutation_prob = 0.25
 
@@ -101,7 +101,7 @@ def battle(pop,contender1,contender2):
     else:
         return pop[contender2][0],contender2
 
-def crossover(fit_pop,pop):
+def crossover(pop):
     new_offspring = np.zeros((0,n_vars))
     parents_index = np.zeros(n_vars,dtype=int)
     # probs = fit_pop/np.sum(fit_pop)
@@ -210,7 +210,7 @@ for run in range(1,11):
 
     for i in range(ini_g + 1, gens):
         " crossover produces offspring "
-        offspring, parents_index = crossover(fit_pop,pop)
+        offspring, parents_index = crossover(pop)
 
         " run a single game for every offspring to get fitness "
         fit_offspring = evaluate(offspring)
