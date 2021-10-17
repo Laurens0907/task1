@@ -32,7 +32,7 @@ if not os.path.exists(experiment_name):
 
 n_hidden_neurons = 10
 
-enemies = [4,7,8] # [4,7,8] or [2,3,6]
+enemies = [2,3,6] # [4,7,8] or [2,3,6]
 
 # initializes simulation in individual evolution mode, for single static enemy.
 env = Environment(experiment_name=experiment_name,
@@ -67,7 +67,7 @@ n_vars = (env.get_num_sensors()+1)*n_hidden_neurons + (n_hidden_neurons+1)*5
 dom_u = 1
 dom_l = -1
 npop = 60 # moet deelbaar zijn door 4
-gens = 2
+gens = 20
 mutation_prob = 0.25
 runs = 10
 
